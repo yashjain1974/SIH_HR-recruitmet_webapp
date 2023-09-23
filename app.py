@@ -106,6 +106,60 @@ def upload_job():
             return render_template('analyzeJob.html', parsed_resume=res, error=None)
     return render_template('analyzeJob.html', parsed_resume=None, error='Error uploading file.')
 
+@app.route('/analyze_cv', methods=['POST'])
+def upload_cv():
+    if request.method == 'POST':
+        file = request.files['file']
+        filenames=""
+        if file:
+            try:
+                container_client.upload_blob(f"{file.filename}", file,overwrite=True) # upload the file to the container using the filename as the blob name
+                filenames += file.filename + "<br /> "
+            except Exception as e:
+                print(e)
+                print("Ignoring duplicate filenames") # ignore duplicate filenames
+            blob_client = container_client.get_blob_client(file.filename) # get blob client to interact with the blob and get blob url
+            with BytesIO() as input_blob:
+                blob_client.download_blob().download_to_stream(input_blob)
+                input_blob.seek(0)
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
+                    temp_file.write(input_blob.read())
+                    temp_file_path = temp_file.name
+                resume_text = extract_text_from_pdf(temp_file_path)
+                os.remove(temp_file_path)
 
+            res = llm_chain.predict(human_input=resume_text)
+            print(res)
+            return render_template('analyzeCV.html', parsed_resume=res, error=None)
+        else:
+            return render_template('analyzeCV.html', parsed_resume=None, error='Error uploading file. Only PDFs are allowed.')
+    return render_template('analyzeCV.html', parsed_resume=None, error='Error uploading file.')
+@app.route('/analyze_job', methods=['POST'])
+def upload_job():
+    if request.method == 'POST':
+        if 'file' in request.files:  # User chose the file upload option
+            file = request.files['file']
+            filenames=""
+            if file:
+                try:
+                    container_client.upload_blob(f"{file.filename}", file,overwrite=True) # upload the file to the container using the filename as the blob name
+                    filenames += file.filename + "<br /> "
+                except Exception as e:
+                    print(e)
+                    print("Ignoring duplicate filenames") # ignore duplicate filenames
+                blob_client = container_client.get_blob_client(file.filename) # get blob client to interact with the blob and get blob url
+                with BytesIO() as input_blob:
+                    blob_client.download_blob().download_to_stream(input_blob)
+                    input_blob.seek(0)
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
+                        temp_file.write(input_blob.read())
+                        temp_file_path = temp_file.name
+                    resume_text = extract_text_from_pdf(temp_file_path)
+                    os.remove(temp_file_path)
+            
+
+
+            return render_template('analyzeJob.html', parsed_resume=res, error=None)
+    return render_template('analyzeJob.html', parsed_resume=None, error='Error uploading file.')
 if __name__ == "__main__":
     app.run(debug=True)
