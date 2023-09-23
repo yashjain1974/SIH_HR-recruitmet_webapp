@@ -191,5 +191,53 @@ def allowed_file(filename):
 @app.route('/welcomePage')
 def welcome():
     return render_template('welcome.html')
+
+@app.route('/interview',methods=['GET', 'POST'])
+def interview():
+    
+
+    
+    
+    
+    # Initialize session variable if not present
+    if 'email' not in session:
+        session['email'] = ""
+    if 'name' not in session:
+        session['name'] = ""
+    
+    if request.method == 'POST':
+        # Retrieve the email and name from the form
+        email = request.form.get('email')
+        name = request.form.get('name')
+        session['email'] = email
+        session['name'] = name
+    
+   
+    if 'question_count' not in session:
+        session['question_count'] = 0
+
+    # Check if the user has reached the limit of 10 questions
+    if session['question_count'] >= 5:
+                total_score = sum(session.get('individual_scores'))
+                
+        
+               
+                session.clear()
+
+        # Render the thank you template
+                return render_template('thank_you.html',total_score=total_score)
+
+    # Generate a question
+    random_topic = random.choice(programming_topics)
+    prompt = f"You are the hiring manager for a growing tech company. Please generate a quiz type question for a Java developer position related to  {random_topic}"
+    question = generate_recruitment_question(prompt)
+
+    # Increment the question count in the session
+    session['question_count'] += 1
+
+    # Render the template with the question
+    return render_template('new_index.html',question=question,question_count=session['question_count'])
+
+
 if __name__ == "__main__":
     app.run(debug=True)
