@@ -187,5 +187,9 @@ def upload_cv():
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() == "pdf"
+
+@app.route('/welcomePage')
+def welcome():
+    return render_template('welcome.html')
 if __name__ == "__main__":
     app.run(debug=True)
