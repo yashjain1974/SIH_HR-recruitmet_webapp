@@ -188,17 +188,10 @@ def upload_cv():
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() == "pdf"
 
-@app.route('/welcomePage')
-def welcome():
-    return render_template('welcome.html')
+
 
 @app.route('/interview',methods=['GET', 'POST'])
 def interview():
-    
-
-    
-    
-    
     # Initialize session variable if not present
     if 'email' not in session:
         session['email'] = ""
@@ -237,6 +230,11 @@ def interview():
 
     # Render the template with the question
     return render_template('new_index.html',question=question,question_count=session['question_count'])
+
+
+@app.route('/welcomePage')
+def welcome():
+    return render_template('welcome.html')
 
 
 if __name__ == "__main__":
