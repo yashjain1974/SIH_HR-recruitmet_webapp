@@ -334,15 +334,15 @@ def validate():
         template="""
                     You work at a company named {company_name}. 
                     Your job is to write official mails to candidaes informing them if they have passed or failed the hiring test.
-                    To pass the test the candidate must score above the cutoff score of {cutoff} out of 100.
+                    To pass the test the candidate must score above the cutoff score of {cutoff} out of 50.
                     You only have to write the body of the email and nothing else. 
-                    The name of the candidate is {name}. The candidate scored {score} marks out of 100. Write an email to inform them about the result.
+                    The name of the candidate is {name}. The candidate scored {score} marks out of 50. Write an email to inform them about the result.
                     You only have to write if the candidate passed or failed. Do not reveal their marks under any circumstances.
                     """,
                     )
                 
         chain = LLMChain(llm=llm, prompt=prompt)
-        cutoff=35
+        cutoff=20
         k=chain.run({
                 "name":session['name'],
                 "cutoff":cutoff,
