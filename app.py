@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, session, redirect, url_for
-
+from package.interviewbot import generate_recruitment_question, validate_answer,send_email
 
 from azure.storage.blob import BlobServiceClient
 from io import StringIO,BytesIO
@@ -19,11 +19,14 @@ import re
 app = Flask(__name__)
 connection_str= os.getenv('AZURE_STORAGE_CONNECTION_STRING')
 
+
 print(connection_str)
 
 container_name = "csv"
 blob_service_client = BlobServiceClient.from_connection_string(conn_str=connection_str)
+
 try:
+    
     container_client = blob_service_client.get_container_client(container=container_name) # get container client to interact with the container in which images will be stored
     container_client.get_container_properties() # get properties of the container to force exception to be thrown if container does not exist
 except Exception as e:
@@ -154,13 +157,16 @@ def upload_cv():
                 resume_text = extract_text_from_pdf(temp_file_path)
                 os.remove(temp_file_path)
            
-            template = """
-        Extract information from the CV provided. Return the information grouped under the following: Contact, 
+            """
+           Extract information from the CV provided. Return the information grouped under the following: Contact, 
             Academic Background, Professional Experience, Skills, Other. Start each group following this pattern: 
-            [<GROUP NAME>], e.g. for 'Skills' do '[SKILLS]'. Return the information as detailed as possible.
+            [<GROUP NAME>], e.g. for 'Skills' do '[SKILLS]'. . Return the information as detailed as possible.
             CV:
+            """
+            template = """
+        
    
-
+provide the score of CV related to python developer position out of 10 in form of [Score] . and provide feedback points to the candidate and highlight relevant skills and project in form of list related to Python developer.
     {chat_history}
     {human_input}"""
            
@@ -232,9 +238,17 @@ programming_topics = [
     "Interprocess Communication (IPC)",
     "Code Documentation and Commenting"
 ]
+@app.route('/welcomePage')
+def welcome():
+    return render_template('welcome.html')
 
 @app.route('/interview',methods=['GET', 'POST'])
 def interview():
+    
+
+    
+    
+    
     # Initialize session variable if not present
     if 'email' not in session:
         session['email'] = ""
@@ -265,7 +279,7 @@ def interview():
 
     # Generate a question
     random_topic = random.choice(programming_topics)
-    prompt = f"You are the hiring manager for a growing tech company. Please generate a quiz type question for a Java developer position related to  {random_topic}"
+    prompt = f"You are the hiring manager for a growing tech company. Please generate a quiz type question for a Python developer position related to  {random_topic}"
     question = generate_recruitment_question(prompt)
 
     # Increment the question count in the session
@@ -275,10 +289,75 @@ def interview():
     return render_template('new_index.html',question=question,question_count=session['question_count'])
 
 
-@app.route('/welcomePage')
-def welcome():
-    return render_template('welcome.html')
+@app.route('/validate', methods=['POST'])
+def validate():
+   
+
+    question = request.form['question']
+    candidate_answer = request.form['candidate_answer']
+    print(question)
+    print(candidate_answer)
+
+    # Validate the answer and get the score
+   
+    def is_integer_string(s):
+        try:
+            int(s)
+            return True
+        except ValueError:
+            return False
+
+    # Assuming you have the 'score' variable as a string
+    score = validate_answer(question, candidate_answer)
+    print("score=",score)
+    # Check if the score is an integer string
+    if is_integer_string(score):
+        score = int(score)
+    else:
+        score = 0
+    if 'individual_scores' not in session:
+        session['individual_scores'] = 0
+    print("score2=",score)
+    # Append the current score to the list of individual scores
+    session['individual_scores']+=score
+    print("Individual Scores:", session['individual_scores'])
+
+    # Check if the user has completed 10 questions
+    print("Session_question=",session['question_count'])
+    if session['question_count'] >= 5:
+        # Calculate the total score
+        total_score = session['individual_scores']
+        print("Total Score:", total_score)
+        llm = OpenAI(temperature=0.9)
+        prompt = PromptTemplate(
+        input_variables=["name","score","cutoff","company_name"],
+        template="""
+                    You work at a company named {company_name}. 
+                    Your job is to write official mails to candidaes informing them if they have passed or failed the hiring test.
+                    To pass the test the candidate must score above the cutoff score of {cutoff} out of 100.
+                    You only have to write the body of the email and nothing else. 
+                    The name of the candidate is {name}. The candidate scored {score} marks out of 100. Write an email to inform them about the result.
+                    You only have to write if the candidate passed or failed. Do not reveal their marks under any circumstances.
+                    """,
+                    )
+                
+        chain = LLMChain(llm=llm, prompt=prompt)
+        cutoff=35
+        k=chain.run({
+                "name":session['name'],
+                "cutoff":cutoff,
+
+                "score":total_score,
+                "company_name":"AICTE Government Recruitment",
+        })
+        send_email(session['email'],k)
+        session.clear()  # Clear the session data after calculating the total score
+
+        # Render the thank you template with the total score
+        return render_template('thank_you.html', total_score=total_score)
 
 
+    # Render the template with the score and the next question
+    return render_template('score.html', question=question,answer= candidate_answer, score=score)
 if __name__ == "__main__":
     app.run(debug=True)
