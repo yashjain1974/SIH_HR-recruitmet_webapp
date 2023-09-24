@@ -140,7 +140,12 @@
         <p class="preformatted-text">{{parsed_resume}}</p>
         {% endif %}
     </div>
-    
+    <div class="form-group-btn">
+        <form id="multiStepForm" action="{{ url_for('welcome') }}">
+            <input type="submit" class="btn btn-primary" value="Go to Interview Window">
+        </form>
+        
+    </div>
 </div>
 
 
