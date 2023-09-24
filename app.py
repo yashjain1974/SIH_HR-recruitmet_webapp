@@ -188,7 +188,50 @@ def upload_cv():
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() == "pdf"
 
+app.secret_key = "12uwnasdfw" 
 
+programming_topics = [
+    "Variables and Data Types",
+    "Operators and Expressions",
+    "Control Flow (if-else, loops)",
+    "Functions and Methods",
+    "Object-Oriented Programming (OOP)",
+    "Classes and Objects",
+    "Inheritance and Polymorphism",
+    "Encapsulation and Abstraction",
+    "File Handling and I/O",
+    "Exception Handling",
+    "Recursion",
+    "Data Structures (Lists, Sets, Tuples, Dictionaries)",
+    "Algorithms (Sorting, Searching, etc.)",
+    "Regular Expressions",
+    "Lambda Functions",
+    "Functional Programming",
+    "Generators and Iterators",
+    "Decorators",
+    "Modules and Packages",
+    "Namespaces and Scope",
+    "Closures",
+    "Multithreading and Multiprocessing",
+    "Networking and Socket Programming",
+    "Web Scraping",
+    "JSON and APIs",
+    "GUI Programming (Tkinter, PyQt, etc.)",
+    "Database Interaction (SQL, SQLite, etc.)",
+    "Unit Testing and Test-Driven Development (TDD)",
+    "Debugging Techniques",
+    "Performance Optimization",
+    "Design Patterns",
+    "Software Development Life Cycle (SDLC)",
+    "Version Control (Git, SVN, etc.)",
+    "Continuous Integration and Deployment (CI/CD)",
+    "Security Best Practices in Programming",
+    "Concurrency and Parallel Programming",
+    "Asynchronous Programming (async/await)",
+    "Data Serialization (XML, JSON, Pickle, etc.)",
+    "Interprocess Communication (IPC)",
+    "Code Documentation and Commenting"
+]
 
 @app.route('/interview',methods=['GET', 'POST'])
 def interview():
