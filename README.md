@@ -23,8 +23,8 @@ This Flask application automates key aspects of the HR recruitment process, part
 
 1. **Clone the repository:**
     ```bash
-    git clone https://github.com/yashjain1974/hr-recruitment-automation.git
-    cd hr-recruitment-automation
+    git clone https://github.com/yashjain1974/SIH_HR-recruitmet_webapp.git
+    cd SIH_HR-recruitmet_webapp
     ```
 
 2. **Install dependencies:**
