@@ -7,6 +7,10 @@
 
 This Flask application automates key aspects of the HR recruitment process, particularly for evaluating Python developer candidates. The application dynamically generates random programming questions from a list of topics using a language model (LLM) and allows candidates to answer them. Their responses are validated and scored, streamlining the recruitment workflow.
 
+## Demo Video
+
+[Demo Video](https://www.youtube.com/watch?v=Gd2wnMj4fBQ)
+
 ## Features
 
 - **Random Question Generation:** Uses LLM to dynamically generate random programming questions.
